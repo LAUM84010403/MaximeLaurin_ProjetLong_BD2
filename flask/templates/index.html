@@ -2,24 +2,30 @@
 <html>
 <head>
     <title>Pizzaplace</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         body {
-            background-color: rgb(255, 0, 255);
+            background-color: #f5f5f5; 
         }
 
         .container {
             display: flex;
             justify-content: space-between;
             padding: 20px;
-            background-color: orange;
+            background-color: #6c757d; 
         }
 
         .container_nombre {
             display: flex;
             justify-content: space-evenly;
             padding: 20px;
-            background-color: blueviolet;
+            background-color: #adb5bd; 
+        }
+
+        .container_commande {
+            display: flex;
+            justify-content: space-evenly;
+            padding: 20px;
+            background-color: #495057;
         }
 
         .text-section {
@@ -101,7 +107,7 @@
     <h1>Pizzaplace : Commander</h1>
     <h2>Qui êtes vous :</h2>
     <div class="container">
-        <!-- Section de texte à gauche -->
+        <!-- Section Texte à Gauche -->
         <div class="text-section">
             <h2>Nouveau client?</h2>
             <form id="clientForm">
@@ -118,7 +124,7 @@
             </form>
         </div>
         
-        <!-- Section du tableau à droite -->
+        <!-- Section Tableau Droite -->
         <div class="table-section">
             <br>
             <table border="1" id="clientsTable">
@@ -131,7 +137,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Les données des clients seront insérées ici -->
+                    <!-- Données -->
                 </tbody>
             </table>
         </div>
@@ -141,26 +147,101 @@
 
     <div class="container_nombre">
         <h3>Entrez votre numéro de client :</h3>
+
         <input type="number" id="numeroInput" placeholder="'Numéro Clients'">
-        <button onclick="numeroClient()">Lire le numéro</button>
+        <button onclick="afficherCommande()">Lire le numéro</button>
+
         <h2 id="resultat"><h2>
+    </div>
+
+    <br>
+
+    <div class="container_commande">
+        <div class="table-section">
+            <br>
+            <table border="1" id="commandeTable">
+                <thead>
+                    <tr>
+                        <th>Numéro Client</th>
+                        <th>Nom</th>
+                        <th>Croute</th>
+                        <th>Sauce</th>
+                        <th>garniture1</th>
+                        <th>garniture2</th>
+                        <th>garniture3</th>
+                        <th>garniture4</th>
+                        <th>statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Données -->
+                </tbody>
+            </table>
+        </div>     
+    </div>
+
+    <br>
+
+    <div class="container">
+        <!-- Section Texte gauche -->
+        <div class="text-section">
+            <h2>Une pizza?</h2>
+            <form id="pizzaForm">
+        
+                <select id="crouteSelect"></select>
+                <select id="sauceSelect"></select>
+                <select id="garniture1Select"></select>
+                <select id="garniture2Select"></select>
+                <select id="garniture3Select"></select>
+                <select id="garniture4Select"></select>
+                
+        
+                <button type="button" onclick="ajouterCommande()">Ajouter la commande</button>
+            </form>
+        </div>
+        
+        <!-- Section Tableau droite -->
+        <div class="table-section">
+            <br>
+            <table border="1" id="commandeAttenteTable">
+                <thead>
+                    <tr>
+                        <th>Croute</th>
+                        <th>Sauce</th>
+                        <th>Garniture 1</th>
+                        <th>Garniture 2</th>
+                        <th>Garniture 3</th>
+                        <th>Garniture 4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Données -->
+                </tbody>
+            </table>
+        </div>
     </div>
     
 
     <script>
-        
+        ///Quand la page est chargée(refresh), plusieurs fonction sont appelée afin de générer la page
+        ///montrerClients
+        ///obtenirValeurCroute/Sauce/Garniture pour les liste déroulante
         document.addEventListener("DOMContentLoaded", function() {
             montrerClients();
+            obtenirValeurCroute();
+            obtenirValeurSauce();
+            obtenirValeurGarniture();
         });
 
+        ///Afficher les clients dans la section de droite
         function montrerClients() {
-            fetch('/afficher_clients')  // Appelle la route Flask pour obtenir les données des clients
+            fetch('/afficher_clients')
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.getElementById('clientsTable').getElementsByTagName('tbody')[0];
-                    tableBody.innerHTML = "";  // Vide le corps du tableau avant d'ajouter de nouvelles lignes
+                    tableBody.innerHTML = "";  
 
-                    // Parcourt les données et crée une nouvelle ligne pour chaque client
+                    // Pour chaqu'une des valeurs, crée une section de tableau
                     data.forEach(client => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
@@ -172,10 +253,15 @@
                         tableBody.appendChild(tr);
                     });
                 })
-                .catch(error => console.error('Erreur:', error));
+                .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
         }
 
+        ///Ajouter un clients dans la liste et refraichit les clients
         function ajouterClient() {
+            //Récupération des valuers
             const nom = document.getElementById("nom").value;
             const numero_telephone = document.getElementById("numero_telephone").value;
             const adresse = document.getElementById("adresse").value;
@@ -196,22 +282,217 @@
                     alert("Erreur lors de l'ajout du client.");
                 }
             })
-            .catch(error => console.error('Erreur:', error));
+            .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
         }
 
-        function numeroClient() {
-            // Récupère la valeur entrée par l'utilisateur
-            const numero = document.getElementById('numeroInput').value;
-                if(numero != "")
-                {
-                    // Affiche le numéro dans le paragraphe avec l'id 'resultat'
-                    document.getElementById('resultat').innerText = `Numéro saisi : ${numero}`;
-                }
-                else{
-                    
-                }
-            
+        ///Selon le numero du client, affiche un historique des commandes
+        function afficherCommande() {
+            const numeroInput = document.getElementById('numeroInput').value;
+            afficherCommandeAttente();
+            fetch('/afficher_commande', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ numero_client: numeroInput }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('commandeTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ""; 
 
+                // Pour chaqu'une des valeurs, crée une section de tableau
+                if (data.length > 0) {
+                    data.forEach(commande => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${commande.id}</td>
+                            <td>${commande.nom}</td>
+                            <td>${commande.croute}</td>
+                            <td>${commande.sauce}</td>
+                            <td>${commande.garniture1}</td>
+                            <td>${commande.garniture2}</td>
+                            <td>${commande.garniture3}</td>
+                            <td>${commande.garniture4}</td>
+                            <td>${commande.statut}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                } else {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td colspan="4">Aucune commande trouvé, sniff</td>`;
+                    tableBody.appendChild(tr);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
+        }
+
+        ///Prermet de créer sa propre pizza
+        function ajouterCommande() {
+            //Récuperation valeurs
+            const croute = document.getElementById("crouteSelect").value;
+            const sauce = document.getElementById("sauceSelect").value;
+            const gar1 = document.getElementById("garniture1Select").value;
+            const gar2 = document.getElementById("garniture2Select").value;
+            const gar3 = document.getElementById("garniture3Select").value;
+            const gar4 = document.getElementById("garniture4Select").value;
+
+            fetch('/ajouter_pizza', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ croute, sauce, gar1, gar2, gar3, gar4 })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Pizza ajouté avec succès ^^ !"); 
+                } else {
+                    alert("Une erreur est arrivé.");
+                }
+            })
+            .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
+        }
+
+        ///Liste déroulante pour la croute/Sauce/garniture
+        function obtenirValeurCroute() {
+            fetch('/obtenir_valeurs_croute')
+                .then(response => response.json())
+                .then(values => {
+                    const select = document.getElementById('crouteSelect');
+                    select.innerHTML = "";
+
+                    values.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
+        }
+
+        ///Liste déroulante pour la croute/Sauce/garniture
+        function obtenirValeurSauce() {
+            fetch('/obtenir_valeurs_sauce')
+                .then(response => response.json())
+                .then(values => {
+                    const select = document.getElementById('sauceSelect');
+                    select.innerHTML = "";
+
+                    values.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
+        }
+        
+        ///Liste déroulante pour la croute/Sauce/garniture
+        function obtenirValeurGarniture() {
+            fetch('/obtenir_valeurs_garniture')
+                .then(response => response.json())
+                .then(values => {
+                    const select1 = document.getElementById('garniture1Select');
+                    const select2 = document.getElementById('garniture2Select');
+                    const select3 = document.getElementById('garniture3Select');
+                    const select4 = document.getElementById('garniture4Select');
+                    select1.innerHTML = "";
+                    select2.innerHTML = "";
+                    select3.innerHTML = "";
+                    select4.innerHTML = "";
+                    
+
+                    values.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        select1.appendChild(option);
+                    });
+                    values.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        select2.appendChild(option);
+                    });
+                    values.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        select3.appendChild(option);
+                    });
+                    values.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        select4.appendChild(option);
+                    });
+
+
+
+                })
+                .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
+        }
+        
+        ///Liste déroulante pour la croute/Sauce/garniture
+        function afficherCommandeAttente(){
+            const id = document.getElementById('numeroInput').value;
+
+            fetch('/afficher_attente', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: id }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('commandeAttenteTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ""; 
+
+                if (data.length > 0) {
+                    data.forEach(commande => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${commande.croute}</td>
+                            <td>${commande.sauce}</td>
+                            <td>${commande.garniture1}</td>
+                            <td>${commande.garniture2}</td>
+                            <td>${commande.garniture3}</td>
+                            <td>${commande.garniture4}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                } else {
+                    const tr = document.createElement('tr');
+                    tableBody.appendChild(tr);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur :', error);
+                alert("Erreur - voir Console");
+            })
         }
 
     </script>
