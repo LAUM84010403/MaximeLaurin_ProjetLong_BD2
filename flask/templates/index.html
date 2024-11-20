@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pizzaplace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            background-color: rgb(255, 0, 255);
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: orange;
+        }
+
+        .container_nombre {
+            display: flex;
+            justify-content: space-evenly;
+            padding: 20px;
+            background-color: blueviolet;
+        }
+
+        .text-section {
+            flex: 1;
+            padding: 20px;
+            max-width: 40%; /* Limite la largeur de la section de texte */
+            background-color: #f0f0f0;
+            margin-right: 20px;
+            border-radius: 8px;
+        }
+
+        .table-section {
+            flex: 1;
+            max-width: 55%; /* Limite la largeur de la section du tableau */
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .text-section form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-section label {
+            font-weight: bold;
+            margin-bottom: 1px;
+        }
+
+        .text-section input, .text-section textarea, .text-section button {
+            margin-bottom: 5px;
+            padding: 3px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+        }
+
+        .text-section button {
+            width: fit-content;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .text-section button:hover {
+            background-color: #45a049;
+        }
+
+        #resultat {
+            background-color: White;
+            border-radius: 2px;
+            border-color: yellowgreen;
+        }
+
+
+    </style>
+
+
+</head>
+<body>
+    <h1>Pizzaplace : Commander</h1>
+    <h2>Qui êtes vous :</h2>
+    <div class="container">
+        <!-- Section de texte à gauche -->
+        <div class="text-section">
+            <h2>Nouveau client?</h2>
+            <form id="clientForm">
+                <label for="nom">Nom :</label>
+                <input type="text" id="nom" name="nom" required><br><br>
+        
+                <label for="numero_telephone">Numéro de Téléphone :</label>
+                <input type="tel" id="numero_telephone" name="numero_telephone" required><br><br>
+        
+                <label for="adresse">Adresse :</label>
+                <textarea id="adresse" name="adresse" required></textarea><br><br>
+        
+                <button type="button" onclick="ajouterClient()">Ajouter le Client</button>
+            </form>
+        </div>
+        
+        <!-- Section du tableau à droite -->
+        <div class="table-section">
+            <br>
+            <table border="1" id="clientsTable">
+                <thead>
+                    <tr>
+                        <th>Numéro Client</th>
+                        <th>Nom</th>
+                        <th>Numéro de Téléphone</th>
+                        <th>Adresse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Les données des clients seront insérées ici -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <br>
+
+    <div class="container_nombre">
+        <h3>Entrez votre numéro de client :</h3>
+        <input type="number" id="numeroInput" placeholder="'Numéro Clients'">
+        <button onclick="numeroClient()">Lire le numéro</button>
+        <h2 id="resultat"><h2>
+    </div>
+    
+
+    <script>
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            montrerClients();
+        });
+
+        function montrerClients() {
+            fetch('/afficher_clients')  // Appelle la route Flask pour obtenir les données des clients
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('clientsTable').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = "";  // Vide le corps du tableau avant d'ajouter de nouvelles lignes
+
+                    // Parcourt les données et crée une nouvelle ligne pour chaque client
+                    data.forEach(client => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${client.id}</td>
+                            <td>${client.nom}</td>
+                            <td>${client.numero_telephone}</td>
+                            <td>${client.adresse}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+        function ajouterClient() {
+            const nom = document.getElementById("nom").value;
+            const numero_telephone = document.getElementById("numero_telephone").value;
+            const adresse = document.getElementById("adresse").value;
+
+            fetch('/ajouter_client', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nom, numero_telephone, adresse })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Client ajouté avec succès !");
+                    montrerClients(); 
+                } else {
+                    alert("Erreur lors de l'ajout du client.");
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
+        }
+
+        function numeroClient() {
+            // Récupère la valeur entrée par l'utilisateur
+            const numero = document.getElementById('numeroInput').value;
+                if(numero != "")
+                {
+                    // Affiche le numéro dans le paragraphe avec l'id 'resultat'
+                    document.getElementById('resultat').innerText = `Numéro saisi : ${numero}`;
+                }
+                else{
+                    
+                }
+            
+
+        }
+
+    </script>
+    </body>
+</html>
